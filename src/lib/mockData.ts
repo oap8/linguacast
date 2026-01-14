@@ -11,11 +11,13 @@ export interface Episode {
   isNew?: boolean;
 }
 
+export type UserLevel = 'beginner' | 'intermediate' | 'advanced' | 'master';
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
+  level: UserLevel;
   avatar: string;
   favorites: string[];
   progress: {
@@ -24,6 +26,7 @@ export interface User {
     streak: number;
     xp: number;
   };
+  hasCompletedPlacement?: boolean;
 }
 
 export const mockEpisodes: Episode[] = [
@@ -120,6 +123,8 @@ export const getLevelColor = (level: string) => {
       return 'bg-primary/10 text-primary border-primary/20';
     case 'advanced':
       return 'bg-accent/10 text-accent border-accent/20';
+    case 'master':
+      return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
     default:
       return 'bg-muted text-muted-foreground';
   }

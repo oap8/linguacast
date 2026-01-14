@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 interface NavbarProps {
   isLoggedIn?: boolean;
-  onLogout?: () => void;
+  onLogout?: () => void | Promise<void>;
 }
 
 const Navbar = ({ isLoggedIn = false, onLogout }: NavbarProps) => {

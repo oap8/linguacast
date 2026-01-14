@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { authApi } from '@/lib/api';
+import { useAuth } from '@/features/auth/hooks';
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -15,18 +15,19 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signup } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      await authApi.signup(email, password, name);
+      await signup(email, password, name);
       toast({
         title: 'Welcome to LinguaCast!',
-        description: 'Your account has been created successfully.',
+        description: 'Let\'s find your English level with a quick placement test.',
       });
-      navigate('/dashboard');
+      navigate('/placement');
     } catch (error) {
       toast({
         title: 'Signup failed',

@@ -1,23 +1,42 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { User, Mail, Award, Settings, Camera, Edit2, Check, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import StatsCard from '@/components/StatsCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { mockUser, getLevelColor } from '@/lib/mockData';
+import { getLevelColor } from '@/lib/mockData';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/features/auth/hooks';
+
+const DEFAULT_PROGRESS = {
+  episodesCompleted: 0,
+  totalMinutes: 0,
+  streak: 0,
+  xp: 0,
+};
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(mockUser.name);
-  const [email, setEmail] = useState(mockUser.email);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const { toast } = useToast();
+  const { user, updateProfile, logout } = useAuth();
 
-  const levelColorClass = getLevelColor(mockUser.level);
+  useEffect(() => {
+    if (user) {
+      setName(user.name);
+      setEmail(user.email);
+    }
+  }, [user]);
 
-  const handleSave = () => {
+  const level = user?.level ?? 'beginner';
+  const progress = user?.progress ?? DEFAULT_PROGRESS;
+  const levelColorClass = getLevelColor(level);
+
+  const handleSave = async () => {
+    await updateProfile({ name, email });
     setIsEditing(false);
     toast({
       title: 'Profile updated',
@@ -26,23 +45,33 @@ const Profile = () => {
   };
 
   const handleCancel = () => {
-    setName(mockUser.name);
-    setEmail(mockUser.email);
+    setName(user?.name ?? '');
+    setEmail(user?.email ?? '');
     setIsEditing(false);
   };
 
-  const levelProgress = {
-    beginner: { current: 0, next: 'intermediate', xpNeeded: 1000 },
-    intermediate: { current: 1000, next: 'advanced', xpNeeded: 3000 },
-    advanced: { current: 3000, next: 'master', xpNeeded: 5000 },
-  };
+  const { nextLevel, xpNeeded, currentLevelMin } = useMemo(() => getNextLevelInfo(progress.xp), [progress.xp]);
 
-  const currentLevelInfo = levelProgress[mockUser.level];
-  const progressToNext = ((mockUser.progress.xp - currentLevelInfo.current) / (currentLevelInfo.xpNeeded - currentLevelInfo.current)) * 100;
+  const progressToNext = useMemo(() => {
+    const numerator = progress.xp - currentLevelMin;
+    const denominator = xpNeeded - currentLevelMin;
+    if (denominator <= 0) {
+      return 0;
+    }
+    return Math.max(0, Math.min(100, (numerator / denominator) * 100));
+  }, [progress.xp, xpNeeded, currentLevelMin]);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Please log in to view your profile.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar isLoggedIn onLogout={() => {}} />
+      <Navbar isLoggedIn onLogout={logout} />
 
       <main className="container mx-auto px-4 py-8">
         {/* Profile Header */}
@@ -53,7 +82,7 @@ const Profile = () => {
               <div className="relative">
                 <div className="h-24 w-24 rounded-full gradient-primary flex items-center justify-center shadow-glow">
                   <span className="text-3xl font-bold text-primary-foreground">
-                    {mockUser.name.charAt(0)}
+                    {user.name.charAt(0)}
                   </span>
                 </div>
                 <button className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-secondary border border-border flex items-center justify-center hover:bg-muted transition-colors">
@@ -101,7 +130,7 @@ const Profile = () => {
                     <p className="text-muted-foreground mb-3">{email}</p>
                     <div className="flex items-center justify-center sm:justify-start gap-3">
                       <span className={cn('text-sm px-3 py-1 rounded-full border capitalize font-medium', levelColorClass)}>
-                        {mockUser.level} Level
+                        {level} Level
                       </span>
                       <Button
                         size="sm"
@@ -127,10 +156,10 @@ const Profile = () => {
           <div className="bg-card border border-border rounded-2xl p-6">
             <div className="flex items-center justify-between mb-3">
               <span className="font-medium text-foreground capitalize">
-                {mockUser.level}
+                {level}
               </span>
               <span className="font-medium text-foreground capitalize">
-                {currentLevelInfo.next}
+                {nextLevel}
               </span>
             </div>
             <div className="h-3 bg-secondary rounded-full overflow-hidden mb-2">
@@ -140,7 +169,7 @@ const Profile = () => {
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              {mockUser.progress.xp.toLocaleString()} / {currentLevelInfo.xpNeeded.toLocaleString()} XP to reach {currentLevelInfo.next} level
+              {progress.xp.toLocaleString()} / {xpNeeded.toLocaleString()} XP to reach {nextLevel} level
             </p>
           </div>
         </section>
@@ -154,26 +183,26 @@ const Profile = () => {
             <StatsCard
               icon={Award}
               label="Total XP"
-              value={mockUser.progress.xp.toLocaleString()}
+              value={progress.xp.toLocaleString()}
               variant="primary"
             />
             <StatsCard
               icon={User}
               label="Episodes Completed"
-              value={mockUser.progress.episodesCompleted}
+              value={progress.episodesCompleted}
               variant="success"
             />
             <StatsCard
               icon={Settings}
               label="Day Streak"
-              value={mockUser.progress.streak}
+              value={progress.streak}
               subtext="days"
               variant="accent"
             />
             <StatsCard
               icon={Mail}
               label="Learning Time"
-              value={`${Math.floor(mockUser.progress.totalMinutes / 60)}h ${mockUser.progress.totalMinutes % 60}m`}
+              value={`${Math.floor(progress.totalMinutes / 60)}h ${progress.totalMinutes % 60}m`}
             />
           </div>
         </section>

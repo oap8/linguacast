@@ -11,6 +11,7 @@ import Library from "./pages/Library";
 import Episode from "./pages/Episode";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import PlacementQuiz from "./pages/PlacementQuiz";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/placement" element={<PlacementQuiz />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/library" element={<Library />} />
           <Route path="/episode/:id" element={<Episode />} />

@@ -1,36 +1,63 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, Trophy, Clock, BookOpen, ArrowRight, Sparkles } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import EpisodeCard from '@/components/EpisodeCard';
 import StatsCard from '@/components/StatsCard';
 import { Button } from '@/components/ui/button';
-import { mockUser, mockEpisodes, type Episode, getLevelColor } from '@/lib/mockData';
+import { useAuth } from '@/features/auth/hooks';
+import { useEpisodes } from '@/features/episodes/hooks';
+import { type Episode, getLevelColor } from '@/lib/mockData';
 import { cn } from '@/lib/utils';
 
 const Dashboard = () => {
-  const [favorites, setFavorites] = useState<string[]>(mockUser.favorites);
+  const { user, toggleFavorite, logout } = useAuth();
+  const { episodes, fetchAll, getRecommended } = useEpisodes();
+  const [favorites, setFavorites] = useState<string[]>(user?.favorites ?? []);
   const [recommendedEpisodes, setRecommendedEpisodes] = useState<Episode[]>([]);
 
-  useEffect(() => {
-    // Get recommended episodes based on user level
-    const recommended = mockEpisodes
-      .filter(ep => ep.level === mockUser.level)
-      .slice(0, 3);
-    setRecommendedEpisodes(recommended);
-  }, []);
-
-  const handleToggleFavorite = (id: string) => {
-    setFavorites(prev =>
-      prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
-    );
+  const isAuthenticated = !!user;
+  const level = user?.level ?? 'beginner';
+  const progress = user?.progress ?? {
+    streak: 0,
+    xp: 0,
+    episodesCompleted: 0,
+    totalMinutes: 0,
   };
 
-  const levelColorClass = getLevelColor(mockUser.level);
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
+  useEffect(() => {
+    setFavorites(user?.favorites ?? []);
+    if (user) {
+      setRecommendedEpisodes(getRecommended(user.level, 3));
+    } else {
+      setRecommendedEpisodes([]);
+    }
+  }, [user, getRecommended]);
+
+  const handleToggleFavorite = async (id: string) => {
+    if (!user) {
+      return;
+    }
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id],
+    );
+    await toggleFavorite(id);
+  };
+
+  const levelColorClass = getLevelColor(level);
+
+  const continueEpisode = useMemo(() => episodes[0], [episodes]);
+  const totalHours = Math.floor(progress.totalMinutes / 60);
+  const remainingMinutes = progress.totalMinutes % 60;
+  const xpDisplay = progress.xp.toLocaleString();
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar isLoggedIn onLogout={() => {}} />
+      <Navbar isLoggedIn={isAuthenticated} onLogout={logout} />
 
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
@@ -40,12 +67,12 @@ const Dashboard = () => {
             <span className="text-sm font-medium text-accent">Welcome back!</span>
           </div>
           <h1 className="font-display text-3xl font-bold text-foreground md:text-4xl mb-2">
-            Hello, {mockUser.name.split(' ')[0]}! 👋
+            Hello, {user?.name?.split(' ')[0] ?? 'Learner'}! 👋
           </h1>
           <div className="flex items-center gap-3">
             <p className="text-muted-foreground">Ready to continue learning?</p>
             <span className={cn('text-sm px-3 py-1 rounded-full border capitalize font-medium', levelColorClass)}>
-              {mockUser.level} Level
+              {level} Level
             </span>
           </div>
         </div>
@@ -55,28 +82,28 @@ const Dashboard = () => {
           <StatsCard
             icon={Flame}
             label="Day Streak"
-            value={mockUser.progress.streak}
+            value={progress.streak}
             subtext="Keep it up!"
             variant="accent"
           />
           <StatsCard
             icon={Trophy}
             label="Total XP"
-            value={mockUser.progress.xp.toLocaleString()}
+            value={xpDisplay}
             variant="primary"
           />
           <StatsCard
             icon={BookOpen}
             label="Episodes"
-            value={mockUser.progress.episodesCompleted}
+            value={progress.episodesCompleted}
             subtext="Completed"
             variant="success"
           />
           <StatsCard
             icon={Clock}
             label="Time Spent"
-            value={`${Math.floor(mockUser.progress.totalMinutes / 60)}h`}
-            subtext={`${mockUser.progress.totalMinutes % 60}m`}
+            value={`${totalHours}h`}
+            subtext={`${remainingMinutes}m`}
           />
         </div>
 
@@ -88,7 +115,7 @@ const Dashboard = () => {
                 Recommended for You
               </h2>
               <p className="text-muted-foreground">
-                Episodes matching your {mockUser.level} level
+                Episodes matching your {level} level
               </p>
             </div>
             <Link to="/library">
@@ -125,7 +152,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground mb-1">Last episode</p>
                 <h3 className="font-display text-xl font-bold text-foreground mb-2">
-                  {mockEpisodes[0].title}
+                  {continueEpisode?.title ?? 'Keep learning'}
                 </h3>
                 <div className="flex items-center gap-4">
                   <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
@@ -134,11 +161,13 @@ const Dashboard = () => {
                   <span className="text-sm text-muted-foreground">35%</span>
                 </div>
               </div>
-              <Link to={`/episode/${mockEpisodes[0].id}`}>
-                <Button variant="default" size="lg">
-                  Continue
-                </Button>
-              </Link>
+              {continueEpisode && (
+                <Link to={`/episode/${continueEpisode.id}`}>
+                  <Button variant="default" size="lg">
+                    Continue
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </section>
@@ -150,7 +179,7 @@ const Dashboard = () => {
               Your Favorites
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {mockEpisodes
+              {episodes
                 .filter(ep => favorites.includes(ep.id))
                 .slice(0, 3)
                 .map(episode => (

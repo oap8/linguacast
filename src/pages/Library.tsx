@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import EpisodeCard from '@/components/EpisodeCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { mockEpisodes, mockUser, type Episode } from '@/lib/mockData';
-import { cn } from '@/lib/utils';
+import { useEpisodes } from '@/features/episodes/hooks';
+import { useAuth } from '@/features/auth/hooks';
 
 type Level = 'all' | 'beginner' | 'intermediate' | 'advanced';
 type Category = 'all' | string;
@@ -14,34 +14,48 @@ const Library = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<Level>('all');
   const [selectedCategory, setSelectedCategory] = useState<Category>('all');
-  const [favorites, setFavorites] = useState<string[]>(mockUser.favorites);
+  const { episodes, fetchAll } = useEpisodes();
+  const { user, toggleFavorite, logout } = useAuth();
+  const [favorites, setFavorites] = useState<string[]>(user?.favorites ?? []);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
+  useEffect(() => {
+    setFavorites(user?.favorites ?? []);
+  }, [user]);
 
   const categories = useMemo(() => {
-    const cats = [...new Set(mockEpisodes.map(ep => ep.category))];
+    const cats = [...new Set(episodes.map(ep => ep.category))];
     return ['all', ...cats];
-  }, []);
+  }, [episodes]);
 
   const levels: Level[] = ['all', 'beginner', 'intermediate', 'advanced'];
 
   const filteredEpisodes = useMemo(() => {
-    return mockEpisodes.filter(episode => {
+    return episodes.filter(episode => {
       const matchesSearch = episode.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         episode.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesLevel = selectedLevel === 'all' || episode.level === selectedLevel;
       const matchesCategory = selectedCategory === 'all' || episode.category === selectedCategory;
       return matchesSearch && matchesLevel && matchesCategory;
     });
-  }, [searchQuery, selectedLevel, selectedCategory]);
+  }, [episodes, searchQuery, selectedLevel, selectedCategory]);
 
-  const handleToggleFavorite = (id: string) => {
+  const handleToggleFavorite = async (id: string) => {
+    if (!user) {
+      return;
+    }
     setFavorites(prev =>
       prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
     );
+    await toggleFavorite(id);
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar isLoggedIn onLogout={() => {}} />
+      <Navbar isLoggedIn={!!user} onLogout={logout} />
 
       <main className="container mx-auto px-4 py-8">
         {/* Header */}

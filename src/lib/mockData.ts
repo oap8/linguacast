@@ -104,14 +104,14 @@ export const mockUser: User = {
   id: '1',
   email: 'learner@linguacast.com',
   name: 'Alex Johnson',
-  level: 'intermediate',
+  level: 'beginner',
   avatar: '',
-  favorites: ['1', '4'],
+  favorites: [],
   progress: {
-    episodesCompleted: 12,
-    totalMinutes: 320,
-    streak: 7,
-    xp: 2450,
+    episodesCompleted: 0,
+    totalMinutes: 0,
+    streak: 0,
+    xp: 0,
   },
 };
 

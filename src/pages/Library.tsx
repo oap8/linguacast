@@ -1,57 +1,44 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Search, BookOpen, Clock, CheckCircle, Play, RotateCcw, Trophy, ArrowRight } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import EpisodeCard from '@/components/EpisodeCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useEpisodes } from '@/features/episodes/hooks';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/features/auth/hooks';
+import { episodesMeta } from '@/features/episodes/data';
+import { getLevelColor } from '@/lib/mockData';
+import type { EpisodeMeta } from '@/features/episodes/types';
 
-type Level = 'all' | 'beginner' | 'intermediate' | 'advanced';
-type Category = 'all' | string;
+// For MVP, simulate completed episodes (first 2 beginner episodes)
+const completedEpisodeIds = ['b1', 'b2'];
 
 const Library = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState<Level>('all');
-  const [selectedCategory, setSelectedCategory] = useState<Category>('all');
-  const { episodes, fetchAll } = useEpisodes();
-  const { user, toggleFavorite, logout } = useAuth();
-  const [favorites, setFavorites] = useState<string[]>(user?.favorites ?? []);
+  const { user, logout } = useAuth();
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
-
-  useEffect(() => {
-    setFavorites(user?.favorites ?? []);
-  }, [user]);
-
-  const categories = useMemo(() => {
-    const cats = [...new Set(episodes.map(ep => ep.category))];
-    return ['all', ...cats];
-  }, [episodes]);
-
-  const levels: Level[] = ['all', 'beginner', 'intermediate', 'advanced'];
-
-  const filteredEpisodes = useMemo(() => {
-    return episodes.filter(episode => {
-      const matchesSearch = episode.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        episode.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesLevel = selectedLevel === 'all' || episode.level === selectedLevel;
-      const matchesCategory = selectedCategory === 'all' || episode.category === selectedCategory;
-      return matchesSearch && matchesLevel && matchesCategory;
-    });
-  }, [episodes, searchQuery, selectedLevel, selectedCategory]);
-
-  const handleToggleFavorite = async (id: string) => {
-    if (!user) {
-      return;
+  // Get completed episodes
+  const completedEpisodes = useMemo(() => {
+    let episodes = episodesMeta.filter(ep => completedEpisodeIds.includes(ep.id));
+    
+    if (searchQuery) {
+      episodes = episodes.filter(ep => 
+        ep.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ep.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
-    setFavorites(prev =>
-      prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
-    );
-    await toggleFavorite(id);
-  };
+    
+    return episodes;
+  }, [searchQuery]);
+
+  // Stats for completed episodes
+  const stats = useMemo(() => {
+    const completed = completedEpisodes.length;
+    const totalMinutes = completedEpisodes.reduce((sum, ep) => sum + Math.floor(ep.duration / 60), 0);
+    const quizzesPassed = completed; // Assuming all completed episodes have passed quizzes
+    return { completed, totalMinutes, quizzesPassed };
+  }, [completedEpisodes]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,104 +48,155 @@ const Library = () => {
         {/* Header */}
         <div className="mb-8 animate-slide-up">
           <h1 className="font-display text-3xl font-bold text-foreground md:text-4xl mb-2">
-            Podcast Library
+            My Library
           </h1>
           <p className="text-muted-foreground">
-            Explore our collection of English learning episodes
+            Review your completed episodes and track your progress
           </p>
         </div>
 
-        {/* Search and Filters */}
-        <div className="mb-8 space-y-4 animate-fade-in">
-          {/* Search */}
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search episodes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          {/* Level Filter */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4" />
-              Level:
-            </span>
-            {levels.map(level => (
-              <Button
-                key={level}
-                variant={selectedLevel === level ? 'default' : 'secondary'}
-                size="sm"
-                onClick={() => setSelectedLevel(level)}
-                className="capitalize"
-              >
-                {level === 'all' ? 'All Levels' : level}
-              </Button>
-            ))}
-          </div>
-
-          {/* Category Filter */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              Category:
-            </span>
-            {categories.map(category => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? 'default' : 'secondary'}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className="capitalize"
-              >
-                {category === 'all' ? 'All Topics' : category}
-              </Button>
-            ))}
-          </div>
+        {/* Stats Overview */}
+        <div className="grid gap-4 sm:grid-cols-3 mb-8">
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.completed}</p>
+                <p className="text-sm text-muted-foreground">Episodes Completed</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Clock className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.totalMinutes} min</p>
+                <p className="text-sm text-muted-foreground">Total Learning Time</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <Trophy className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.quizzesPassed}</p>
+                <p className="text-sm text-muted-foreground">Quizzes Passed</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Results count */}
-        <p className="text-sm text-muted-foreground mb-6">
-          Showing {filteredEpisodes.length} episode{filteredEpisodes.length !== 1 ? 's' : ''}
-        </p>
+        {/* Search */}
+        {completedEpisodes.length > 0 && (
+          <div className="mb-6">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search completed episodes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+        )}
 
-        {/* Episodes Grid */}
-        {filteredEpisodes.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredEpisodes.map((episode, index) => (
-              <div key={episode.id} style={{ animationDelay: `${index * 0.05}s` }}>
-                <EpisodeCard
-                  episode={episode}
-                  isFavorite={favorites.includes(episode.id)}
-                  onToggleFavorite={handleToggleFavorite}
-                />
-              </div>
-            ))}
+        {/* Completed Episodes */}
+        {completedEpisodes.length > 0 ? (
+          <div className="space-y-4">
+            <h2 className="font-display text-xl font-bold text-foreground">
+              Completed Episodes ({completedEpisodes.length})
+            </h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {completedEpisodes.map((episode) => (
+                <CompletedEpisodeCard key={episode.id} episode={episode} />
+              ))}
+            </div>
+          </div>
+        ) : searchQuery ? (
+          <div className="text-center py-16">
+            <p className="text-muted-foreground text-lg mb-4">
+              No completed episodes match your search.
+            </p>
+            <Button variant="outline" onClick={() => setSearchQuery('')}>
+              Clear Search
+            </Button>
           </div>
         ) : (
           <div className="text-center py-16">
-            <p className="text-muted-foreground text-lg">
-              No episodes found matching your criteria.
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
+              <BookOpen className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">No Episodes Yet</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              Start your learning journey! Complete episodes from your Dashboard to see them here for review.
             </p>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedLevel('all');
-                setSelectedCategory('all');
-              }}
-            >
-              Clear Filters
-            </Button>
+            <Link to="/dashboard">
+              <Button className="gap-2">
+                Go to Dashboard
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         )}
       </main>
     </div>
+  );
+};
+
+// Completed Episode Card Component
+const CompletedEpisodeCard = ({ episode }: { episode: EpisodeMeta }) => {
+  return (
+    <Card className="group hover:border-primary hover:shadow-md transition-all">
+      <CardContent className="p-4">
+        {/* Completion badge */}
+        <div className="flex items-center justify-between mb-3">
+          <Badge className={getLevelColor(episode.level)}>{episode.level}</Badge>
+          <div className="flex items-center gap-1 text-green-600">
+            <CheckCircle className="h-4 w-4" />
+            <span className="text-xs font-medium">Completed</span>
+          </div>
+        </div>
+
+        {/* Episode info */}
+        <h3 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+          {episode.order}. {episode.title}
+        </h3>
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+          {episode.description}
+        </p>
+
+        {/* Meta info */}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
+          <span>{episode.category}</span>
+          <span>•</span>
+          <span>{Math.floor(episode.duration / 60)} min</span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Link to={`/episode/${episode.id}`} className="flex-1">
+            <Button variant="outline" size="sm" className="w-full gap-2">
+              <RotateCcw className="h-3 w-3" />
+              Review
+            </Button>
+          </Link>
+          <Link to={`/episode/${episode.id}`}>
+            <Button size="sm" className="gap-2">
+              <Play className="h-3 w-3" />
+              Play
+            </Button>
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

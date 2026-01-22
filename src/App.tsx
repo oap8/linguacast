@@ -8,7 +8,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Library from "./pages/Library";
-import Episode from "./pages/Episode";
+import EpisodeDetail from "./pages/EpisodeDetail";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import PlacementQuiz from "./pages/PlacementQuiz";
@@ -28,7 +28,7 @@ const App = () => (
           <Route path="/placement" element={<PlacementQuiz />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/library" element={<Library />} />
-          <Route path="/episode/:id" element={<Episode />} />
+          <Route path="/episode/:id" element={<EpisodeDetail />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

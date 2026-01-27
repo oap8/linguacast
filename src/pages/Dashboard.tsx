@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/features/auth/hooks';
-import { getLevelColor } from '@/lib/mockData';
 import { episodesMeta, getEpisodesByLevel } from '@/features/episodes/data';
 import type { EpisodeMeta } from '@/features/episodes/types';
 import { cn } from '@/lib/utils';
@@ -25,7 +24,20 @@ const Dashboard = () => {
     totalMinutes: 0,
   };
 
-  const levelColorClass = getLevelColor(userLevel);
+  const getLevelTextClass = (level: string) => {
+    switch (level) {
+      case 'beginner':
+        return 'text-success';
+      case 'intermediate':
+        return 'text-primary';
+      case 'advanced':
+        return 'text-accent';
+      case 'master':
+        return 'text-yellow-600';
+      default:
+        return 'text-muted-foreground';
+    }
+  };
   const totalHours = Math.floor(progress.totalMinutes / 60);
   const remainingMinutes = progress.totalMinutes % 60;
   const xpDisplay = progress.xp.toLocaleString();
@@ -69,8 +81,8 @@ const Dashboard = () => {
           </h1>
           <div className="flex items-center gap-3">
             <p className="text-muted-foreground">Your learning journey awaits</p>
-            <span className={cn('text-sm px-3 py-1 rounded-full border capitalize font-medium', levelColorClass)}>
-              {userLevel} Level
+            <span className={cn('text-sm capitalize font-medium', getLevelTextClass(userLevel))}>
+              {userLevel} level
             </span>
           </div>
         </div>
@@ -108,34 +120,57 @@ const Dashboard = () => {
         {/* Continue Learning Card */}
         {nextEpisode && (
           <section className="mb-8">
-            <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-6">
-                  <div className="hidden sm:flex h-16 w-16 items-center justify-center rounded-xl bg-primary shadow-lg">
-                    <Play className="h-8 w-8 text-primary-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground mb-1">Continue where you left off</p>
-                    <h3 className="font-display text-xl font-bold text-foreground mb-1">
-                      {nextEpisode.order}. {nextEpisode.title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Badge className={getLevelColor(nextEpisode.level)}>{nextEpisode.level}</Badge>
-                      <span>•</span>
-                      <span>{Math.floor(nextEpisode.duration / 60)} min</span>
-                      <span>•</span>
-                      <span>{nextEpisode.category}</span>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-6">
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground mb-1">Continue where you left off</p>
+                      <h3 className="font-display text-xl font-bold text-foreground mb-1">
+                        {nextEpisode.order}. {nextEpisode.title}
+                      </h3>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span className={cn('text-xs font-medium capitalize', getLevelTextClass(nextEpisode.level))}>
+                          {nextEpisode.level}
+                        </span>
+                        <span>•</span>
+                        <span>{Math.floor(nextEpisode.duration / 60)} min</span>
+                        <span>•</span>
+                        <span>{nextEpisode.category}</span>
+                      </div>
                     </div>
+                    <Link to={`/episode/${nextEpisode.id}`}>
+                      <Button size="lg" className="gap-2">
+                        <Play className="h-4 w-4" />
+                        Start
+                      </Button>
+                    </Link>
                   </div>
-                  <Link to={`/episode/${nextEpisode.id}`}>
-                    <Button size="lg" className="gap-2">
-                      <Play className="h-4 w-4" />
-                      Start
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              <Link to={`/episode/${nextEpisode.id}`} className="h-full">
+                <Card className="h-full hover:shadow-soft transition-shadow">
+                  <CardContent className="p-6 h-full flex flex-col">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <BookOpen className="h-5 w-5" />
+                      </div>
+                      <h3 className="font-display text-lg font-bold text-foreground">Play and practise</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Practice vocabulary and sentence building for this episode.
+                    </p>
+                    <div className="mt-auto">
+                      <Button variant="secondary" className="w-full gap-2">
+                        <ArrowRight className="h-4 w-4" />
+                        Open
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
           </section>
         )}
 
@@ -163,9 +198,9 @@ const Dashboard = () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <Badge className={cn(getLevelColor(userLevel), 'text-sm px-3 py-1 capitalize')}>
+                  <span className={cn('text-sm font-medium capitalize', getLevelTextClass(userLevel))}>
                     {userLevel}
-                  </Badge>
+                  </span>
                   <span className="text-sm text-muted-foreground">
                     {levelStats.unlocked}/{levelStats.total} episodes available
                   </span>

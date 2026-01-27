@@ -1,0 +1,459 @@
+{
+  "metadata": {
+    "id": "a1",
+    "level": "a1",
+    "order": 1,
+    "title": "Morning Coffee Conversations",
+    "subtitle": "Saying Hello During the Day",
+    "duration": 180,
+    "category": "Daily Life",
+    "isLocked": false,
+    "isNew": true,
+    "audioFile": "audio_01.mp3"
+  },
+  "content": [
+    {
+      "type": "heading",
+      "text": "Morning Coffee Conversations",
+      "level": 1
+    },
+    {
+      "type": "heading",
+      "text": "Episode: Saying Hello During the Day",
+      "level": 2
+    },
+    {
+      "type": "text",
+      "text": "Hello and welcome."
+    },
+    {
+      "type": "text",
+      "text": "Welcome to Morning Coffee Conversations."
+    },
+    {
+      "type": "text",
+      "text": "This is easy English for beginners."
+    },
+    {
+      "type": "image",
+      "src": "images/coffee_cup.png",
+      "alt": "Coffee cup showing times of day - Good morning, Afternoon, Evening, Night",
+      "caption": ""
+    },
+    {
+      "type": "text",
+      "text": "Let's start."
+    },
+    {
+      "type": "heading",
+      "text": "In the morning, we say:",
+      "level": 3
+    },
+    {
+      "type": "text",
+      "text": "Good morning.",
+      "highlight": true
+    },
+    {
+      "type": "text",
+      "text": "Good morning.",
+      "highlight": true
+    },
+    {
+      "type": "text",
+      "text": "We say good morning from early morning until about twelve o'clock."
+    },
+    {
+      "type": "text",
+      "text": "Listen again:"
+    },
+    {
+      "type": "text",
+      "text": "Good morning.",
+      "highlight": true
+    },
+    {
+      "type": "heading",
+      "text": "In the afternoon, we say:",
+      "level": 3
+    },
+    {
+      "type": "text",
+      "text": "Good afternoon.",
+      "highlight": true
+    },
+    {
+      "type": "text",
+      "text": "Good afternoon.",
+      "highlight": true
+    },
+    {
+      "type": "text",
+      "text": "We say good afternoon after twelve o'clock."
+    },
+    {
+      "type": "text",
+      "text": "Listen again:"
+    },
+    {
+      "type": "text",
+      "text": "Good afternoon.",
+      "highlight": true
+    },
+    {
+      "type": "heading",
+      "text": "In the evening, we say:",
+      "level": 3
+    },
+    {
+      "type": "text",
+      "text": "Good evening.",
+      "highlight": true
+    },
+    {
+      "type": "text",
+      "text": "Good evening.",
+      "highlight": true
+    },
+    {
+      "type": "text",
+      "text": "We say good evening when the sun goes down."
+    },
+    {
+      "type": "text",
+      "text": "Listen again:"
+    },
+    {
+      "type": "text",
+      "text": "Good evening.",
+      "highlight": true
+    },
+    {
+      "type": "heading",
+      "text": "At night, before we sleep, we say:",
+      "level": 3
+    },
+    {
+      "type": "text",
+      "text": "Good night.",
+      "highlight": true
+    },
+    {
+      "type": "text",
+      "text": "Good night.",
+      "highlight": true
+    },
+    {
+      "type": "text",
+      "text": "We do not say good night to say hello."
+    },
+    {
+      "type": "text",
+      "text": "We say good night to say goodbye."
+    },
+    {
+      "type": "heading",
+      "text": "Now let's practice.",
+      "level": 2
+    },
+    {
+      "type": "practice",
+      "instruction": "It is 8 a.m.",
+      "expected": "Good morning."
+    },
+    {
+      "type": "practice",
+      "instruction": "It is 3 p.m.",
+      "expected": "Good afternoon."
+    },
+    {
+      "type": "practice",
+      "instruction": "It is 7 p.m.",
+      "expected": "Good evening."
+    },
+    {
+      "type": "practice",
+      "instruction": "It is time to sleep.",
+      "expected": "Good night."
+    },
+    {
+      "type": "heading",
+      "text": "Now a short conversation.",
+      "level": 2
+    },
+    {
+      "type": "text",
+      "text": "Anna is in a coffee shop."
+    },
+    {
+      "type": "image",
+      "src": "images/Anna_barista.png",
+      "alt": "Anna talking to a barista in a coffee shop",
+      "caption": ""
+    },
+    {
+      "type": "text",
+      "text": "Let's repeat the conversation slowly between Anna and the barista."
+    },
+    {
+      "type": "dialogue",
+      "speaker": "Anna",
+      "text": "Good morning."
+    },
+    {
+      "type": "dialogue",
+      "speaker": "Barista",
+      "text": "Good morning. How are you?"
+    },
+    {
+      "type": "dialogue",
+      "speaker": "Anna",
+      "text": "I am fine, thank you."
+    },
+    {
+      "type": "dialogue",
+      "speaker": "Barista",
+      "text": "Great! What is your name?"
+    },
+    {
+      "type": "dialogue",
+      "speaker": "Anna",
+      "text": "My name is Anna."
+    },
+    {
+      "type": "dialogue",
+      "speaker": "Barista",
+      "text": "Nice to meet you, Anna."
+    },
+    {
+      "type": "text",
+      "text": "Great job."
+    },
+    {
+      "type": "heading",
+      "text": "Remember:",
+      "level": 3
+    },
+    {
+      "type": "text",
+      "text": "Morning → Good morning"
+    },
+    {
+      "type": "text",
+      "text": "Afternoon → Good afternoon"
+    },
+    {
+      "type": "text",
+      "text": "Evening → Good evening"
+    },
+    {
+      "type": "text",
+      "text": "Night → Good night"
+    },
+    {
+      "type": "text",
+      "text": "Thank you for listening."
+    },
+    {
+      "type": "text",
+      "text": "See you next time."
+    }
+  ],
+  "vocabulary": [
+    {
+      "word": "morning",
+      "translations": {
+        "es": "mañana",
+        "pt": "manhã"
+      },
+      "partOfSpeech": "noun",
+      "example": "Good morning, how are you?"
+    },
+    {
+      "word": "afternoon",
+      "translations": {
+        "es": "tarde",
+        "pt": "tarde"
+      },
+      "partOfSpeech": "noun",
+      "example": "Good afternoon, nice to see you."
+    },
+    {
+      "word": "evening",
+      "translations": {
+        "es": "noche (temprano)",
+        "pt": "noite (cedo)"
+      },
+      "partOfSpeech": "noun",
+      "example": "Good evening, welcome to our restaurant."
+    },
+    {
+      "word": "night",
+      "translations": {
+        "es": "noche",
+        "pt": "noite"
+      },
+      "partOfSpeech": "noun",
+      "example": "Good night, sleep well."
+    },
+    {
+      "word": "hello",
+      "translations": {
+        "es": "hola",
+        "pt": "olá"
+      },
+      "partOfSpeech": "interjection",
+      "example": "Hello! How are you today?"
+    },
+    {
+      "word": "goodbye",
+      "translations": {
+        "es": "adiós",
+        "pt": "tchau"
+      },
+      "partOfSpeech": "interjection",
+      "example": "Goodbye, see you tomorrow!"
+    },
+    {
+      "word": "fine",
+      "translations": {
+        "es": "bien",
+        "pt": "bem"
+      },
+      "partOfSpeech": "adjective",
+      "example": "I am fine, thank you."
+    },
+    {
+      "word": "name",
+      "translations": {
+        "es": "nombre",
+        "pt": "nome"
+      },
+      "partOfSpeech": "noun",
+      "example": "What is your name?"
+    }
+  ],
+  "expressions": [
+    {
+      "expression": "Good morning",
+      "meaning": "A greeting used from early morning until about 12 o'clock",
+      "usage": "Formal and informal",
+      "example": "Good morning! Did you sleep well?"
+    },
+    {
+      "expression": "Good afternoon",
+      "meaning": "A greeting used after 12 o'clock until evening",
+      "usage": "Formal and informal",
+      "example": "Good afternoon, how can I help you?"
+    },
+    {
+      "expression": "Good evening",
+      "meaning": "A greeting used when the sun goes down",
+      "usage": "Formal and informal",
+      "example": "Good evening, welcome to the party!"
+    },
+    {
+      "expression": "Good night",
+      "meaning": "A farewell used before going to sleep (not for greeting)",
+      "usage": "Informal, used to say goodbye",
+      "example": "Good night, see you tomorrow!"
+    },
+    {
+      "expression": "How are you?",
+      "meaning": "A common question to ask about someone's well-being",
+      "usage": "Informal and semi-formal",
+      "example": "Hi! How are you today?"
+    },
+    {
+      "expression": "Nice to meet you",
+      "meaning": "A polite phrase when meeting someone for the first time",
+      "usage": "Formal and informal",
+      "example": "Nice to meet you, Anna!"
+    }
+  ],
+  "quiz": [
+    {
+      "question": "It is 8 a.m. What do you say?",
+      "options": ["Good night", "Good morning", "Good evening"],
+      "correctAnswer": 1,
+      "explanation": "We say 'Good morning' at 8 a.m. in the morning."
+    },
+    {
+      "question": "We say \"Good morning\" in the…",
+      "options": ["night", "afternoon", "morning"],
+      "correctAnswer": 2,
+      "explanation": "We say 'Good morning' in the morning time."
+    },
+    {
+      "question": "It is 3 p.m. What do you say?",
+      "options": ["Good morning", "Good afternoon", "Good night"],
+      "correctAnswer": 1,
+      "explanation": "We say 'Good afternoon' at 3 p.m. in the afternoon."
+    },
+    {
+      "question": "We say \"Good afternoon\" after…",
+      "options": ["twelve o'clock", "midnight", "night"],
+      "correctAnswer": 0,
+      "explanation": "We say 'Good afternoon' after twelve o'clock (noon)."
+    },
+    {
+      "question": "It is 7 p.m. The sun goes down. What do you say?",
+      "options": ["Good morning", "Good afternoon", "Good evening"],
+      "correctAnswer": 2,
+      "explanation": "We say 'Good evening' at 7 p.m. when the sun goes down."
+    },
+    {
+      "question": "We say \"Good evening\" when…",
+      "options": ["we wake up", "the sun goes down", "we sleep"],
+      "correctAnswer": 1,
+      "explanation": "We say 'Good evening' when the sun goes down in the evening."
+    },
+    {
+      "question": "It is time to sleep. What do you say?",
+      "options": ["Good evening", "Good afternoon", "Good night"],
+      "correctAnswer": 2,
+      "explanation": "We say 'Good night' when it is time to sleep."
+    },
+    {
+      "question": "\"Good night\" is for saying…",
+      "options": ["hello", "goodbye", "hello and goodbye"],
+      "correctAnswer": 1,
+      "explanation": "'Good night' is for saying goodbye before sleeping, not for saying hello."
+    },
+    {
+      "question": "In the coffee shop, Anna says first:",
+      "options": ["My name is Anna", "Good morning", "Nice to meet you"],
+      "correctAnswer": 1,
+      "explanation": "Anna says 'Good morning' first to greet the barista."
+    },
+    {
+      "question": "The barista says:",
+      "options": ["How are you?", "Good night", "Goodbye"],
+      "correctAnswer": 0,
+      "explanation": "The barista says 'How are you?' to ask about Anna's well-being."
+    }
+  ],
+  "aiConversation": [
+    {
+      "prompt": "Practice greeting someone in the morning at a coffee shop",
+      "context": "You are ordering coffee at 9 AM. Greet the barista and introduce yourself.",
+      "expectedVocabulary": ["morning", "hello", "how are you", "name", "fine", "thank you"],
+      "rubric": {
+        "greeting": "Used appropriate time-based greeting",
+        "response": "Responded appropriately to 'How are you?'",
+        "introduction": "Introduced themselves with their name",
+        "politeness": "Used polite expressions like 'thank you'"
+      }
+    },
+    {
+      "prompt": "Practice different greetings throughout the day",
+      "context": "You meet your neighbor at different times. Use the correct greeting for each time.",
+      "expectedVocabulary": ["morning", "afternoon", "evening", "night"],
+      "rubric": {
+        "timeAccuracy": "Used correct greeting for the time of day",
+        "pronunciation": "Clear pronunciation of greetings",
+        "naturalness": "Natural conversation flow"
+      }
+    }
+  ]
+}

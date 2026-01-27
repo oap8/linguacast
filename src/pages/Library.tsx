@@ -11,8 +11,8 @@ import { episodesMeta } from '@/features/episodes/data';
 import { getLevelColor } from '@/lib/mockData';
 import type { EpisodeMeta } from '@/features/episodes/types';
 
-// For MVP, simulate completed episodes (first 2 beginner episodes)
-const completedEpisodeIds = ['b1', 'b2'];
+// For MVP, simulate completed episodes (only first episode completed)
+const completedEpisodeIds = ['b1'];
 
 const Library = () => {
   const [searchQuery, setSearchQuery] = useState('');

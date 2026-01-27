@@ -100,8 +100,8 @@ const Dashboard = () => {
           <StatsCard
             icon={Clock}
             label="Time Spent"
-            value={`${totalHours}h`}
-            subtext={`${remainingMinutes}m`}
+            value={totalHours > 0 ? `${totalHours}h` : `${remainingMinutes}m`}
+            subtext={totalHours > 0 ? `${remainingMinutes}m` : undefined}
           />
         </div>
 

@@ -7,25 +7,79 @@ import { cn } from '@/lib/utils';
 interface AudioPlayerProps {
   title: string;
   duration: number;
+  audioUrl?: string;
 }
 
-const AudioPlayer = ({ title, duration }: AudioPlayerProps) => {
+const AudioPlayer = ({ title, duration, audioUrl }: AudioPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [actualDuration, setActualDuration] = useState(duration);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Simulate audio progress
+  // Initialize audio element and get actual duration
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying && currentTime < duration) {
-      interval = setInterval(() => {
-        setCurrentTime((prev) => Math.min(prev + playbackRate, duration));
-      }, 1000);
+    const audio = audioRef.current;
+    if (!audio || !audioUrl) return;
+
+    audio.src = audioUrl;
+    audio.load();
+
+    const handleLoadedMetadata = () => {
+      // Use actual audio duration if available
+      if (audio.duration && !isNaN(audio.duration)) {
+        setActualDuration(audio.duration);
+      }
+    };
+
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    return () => audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+  }, [audioUrl]);
+
+  // Update current time from audio element
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const handleEnded = () => setIsPlaying(false);
+
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
+  // Control playback
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.play().catch(err => console.error('Audio play error:', err));
+    } else {
+      audio.pause();
     }
-    return () => clearInterval(interval);
-  }, [isPlaying, duration, playbackRate, currentTime]);
+  }, [isPlaying]);
+
+  // Update volume
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = isMuted ? 0 : volume / 100;
+  }, [volume, isMuted]);
+
+  // Update playback rate
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.playbackRate = playbackRate;
+  }, [playbackRate]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -34,7 +88,11 @@ const AudioPlayer = ({ title, duration }: AudioPlayerProps) => {
   };
 
   const handleSeek = (value: number[]) => {
-    setCurrentTime(value[0]);
+    const newTime = value[0];
+    setCurrentTime(newTime);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
   };
 
   const handleVolumeChange = (value: number[]) => {
@@ -47,7 +105,11 @@ const AudioPlayer = ({ title, duration }: AudioPlayerProps) => {
   };
 
   const skip = (seconds: number) => {
-    setCurrentTime((prev) => Math.max(0, Math.min(prev + seconds, duration)));
+    const audio = audioRef.current;
+    if (!audio) return;
+    const newTime = Math.max(0, Math.min(audio.currentTime + seconds, actualDuration));
+    audio.currentTime = newTime;
+    setCurrentTime(newTime);
   };
 
   const cyclePlaybackRate = () => {
@@ -58,6 +120,9 @@ const AudioPlayer = ({ title, duration }: AudioPlayerProps) => {
   };
 
   const restart = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
     setCurrentTime(0);
     setIsPlaying(true);
   };
@@ -66,6 +131,8 @@ const AudioPlayer = ({ title, duration }: AudioPlayerProps) => {
 
   return (
     <div className="bg-card border border-border rounded-2xl p-6 shadow-card">
+      {/* Hidden audio element */}
+      <audio ref={audioRef} preload="metadata" />
       {/* Title */}
       <h3 className="font-display font-semibold text-lg text-foreground mb-4 text-center">
         Now Playing: {title}
@@ -75,14 +142,14 @@ const AudioPlayer = ({ title, duration }: AudioPlayerProps) => {
       <div className="mb-4">
         <Slider
           value={[currentTime]}
-          max={duration}
+          max={actualDuration}
           step={1}
           onValueChange={handleSeek}
           className="cursor-pointer"
         />
         <div className="flex justify-between mt-2 text-xs text-muted-foreground">
           <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
+          <span>{formatTime(actualDuration)}</span>
         </div>
       </div>
 

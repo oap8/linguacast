@@ -108,8 +108,8 @@ export const mockUser: User = {
   avatar: '',
   favorites: [],
   progress: {
-    episodesCompleted: 0,
-    totalMinutes: 0,
+    episodesCompleted: 1,
+    totalMinutes: 8,
     streak: 0,
     xp: 0,
   },

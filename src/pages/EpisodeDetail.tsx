@@ -17,6 +17,8 @@ import {
 
 import Navbar from "@/components/Navbar";
 import AudioPlayer from "@/components/AudioPlayer";
+import { RichTranscript } from "@/components/RichTranscript";
+import { VocabularyList } from "@/components/VocabularyList";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,9 +26,11 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/features/auth/hooks";
 import { useToast } from "@/hooks/use-toast";
-import { episodesMeta, getEpisodeContent } from "@/features/episodes/data";
-import type { EpisodeMeta, EpisodeContent, QuizQuestion } from "@/features/episodes/types";
+import { episodesMeta } from "@/features/episodes/data";
+import { loadEpisodeData, getEpisodeBasePath, type EpisodeData } from "@/features/episodes/loader";
+import type { EpisodeMeta } from "@/features/episodes/types";
 import { getLevelColor } from "@/lib/mockData";
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const EpisodeDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,9 +39,10 @@ const EpisodeDetail = () => {
   const { user, toggleFavorite, logout } = useAuth();
 
   const [episode, setEpisode] = useState<EpisodeMeta | null>(null);
-  const [content, setContent] = useState<EpisodeContent | null>(null);
+  const [episodeData, setEpisodeData] = useState<EpisodeData | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState("transcript");
+  const [loading, setLoading] = useState(true);
   
   // Quiz state
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
@@ -67,8 +72,13 @@ const EpisodeDetail = () => {
     }
 
     setEpisode(ep);
-    setContent(getEpisodeContent(id));
     setIsFavorite(user?.favorites.includes(id) ?? false);
+    
+    // Load episode data from JSON
+    loadEpisodeData(id).then(data => {
+      setEpisodeData(data);
+      setLoading(false);
+    });
   }, [id, navigate, user, toast]);
 
   const handleToggleFavorite = async () => {
@@ -87,11 +97,11 @@ const EpisodeDetail = () => {
   };
 
   const handleQuizSubmit = () => {
-    if (!content) return;
+    if (!episodeData) return;
     
     let correct = 0;
-    content.quiz.forEach(q => {
-      if (quizAnswers[q.id] === q.correctAnswer) {
+    episodeData.quiz.forEach((q, index) => {
+      if (quizAnswers[index.toString()] === q.correctAnswer) {
         correct++;
       }
     });
@@ -99,10 +109,10 @@ const EpisodeDetail = () => {
     setQuizScore(correct);
     setQuizSubmitted(true);
     
-    const percentage = Math.round((correct / content.quiz.length) * 100);
+    const percentage = Math.round((correct / episodeData.quiz.length) * 100);
     toast({
       title: `Quiz Complete!`,
-      description: `You scored ${correct}/${content.quiz.length} (${percentage}%)`,
+      description: `You scored ${correct}/${episodeData.quiz.length} (${percentage}%)`,
     });
   };
 
@@ -112,13 +122,23 @@ const EpisodeDetail = () => {
     setQuizScore(0);
   };
 
-  if (!episode) {
+  if (!episode || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">Loading episode...</p>
       </div>
     );
   }
+
+  if (!episodeData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Failed to load episode content.</p>
+      </div>
+    );
+  }
+
+  const basePath = getEpisodeBasePath(episode.id);
 
   return (
     <div className="min-h-screen bg-background">
@@ -161,7 +181,11 @@ const EpisodeDetail = () => {
 
         {/* Audio Player */}
         <div className="mb-6">
-          <AudioPlayer title={episode.title} duration={episode.duration} />
+          <AudioPlayer 
+            title={episode.title} 
+            duration={episode.duration}
+            audioUrl={`${basePath}/${episodeData.metadata.audioFile}`}
+          />
         </div>
 
         {/* Content Tabs */}
@@ -171,13 +195,13 @@ const EpisodeDetail = () => {
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Transcript</span>
             </TabsTrigger>
-            <TabsTrigger value="expressions" className="flex items-center gap-2">
-              <Lightbulb className="h-4 w-4" />
-              <span className="hidden sm:inline">Expressions</span>
-            </TabsTrigger>
             <TabsTrigger value="vocabulary" className="flex items-center gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden sm:inline">Vocabulary</span>
+            </TabsTrigger>
+            <TabsTrigger value="expressions" className="flex items-center gap-2">
+              <Lightbulb className="h-4 w-4" />
+              <span className="hidden sm:inline">Expressions</span>
             </TabsTrigger>
             <TabsTrigger value="quiz" className="flex items-center gap-2">
               <HelpCircle className="h-4 w-4" />
@@ -199,59 +223,13 @@ const EpisodeDetail = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {content?.transcript ? (
-                  <div className="space-y-4">
-                    {content.transcript.map((segment) => (
-                      <div key={segment.id} className="flex gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                        <span className="text-xs text-muted-foreground font-mono min-w-[50px]">
-                          {Math.floor(segment.startTime / 60)}:{String(segment.startTime % 60).padStart(2, '0')}
-                        </span>
-                        <div>
-                          {segment.speaker && (
-                            <span className="font-semibold text-primary mr-2">{segment.speaker}:</span>
-                          )}
-                          <span className="text-foreground">{segment.text}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">Transcript not available for this episode yet.</p>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Expressions Tab */}
-          <TabsContent value="expressions">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lightbulb className="h-5 w-5" />
-                  Expressions & Idioms
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {content?.expressions ? (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {content.expressions.map((expr) => (
-                      <Card key={expr.id} className="bg-muted/30">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-2">
-                            <h4 className="font-semibold text-lg text-foreground">"{expr.phrase}"</h4>
-                            <Badge variant="outline" className="text-xs capitalize">{expr.type.replace('_', ' ')}</Badge>
-                          </div>
-                          <p className="text-muted-foreground mb-3">{expr.meaning}</p>
-                          <div className="bg-background rounded-lg p-3 border">
-                            <p className="text-sm italic">"{expr.example}"</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">Expressions not available for this episode yet.</p>
-                )}
+                <RichTranscript 
+                  content={episodeData.content} 
+                  basePath={basePath}
+                  onTimestampClick={(timestamp) => {
+                    console.log('Jump to timestamp:', timestamp);
+                  }}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -266,28 +244,37 @@ const EpisodeDetail = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {content?.vocabulary ? (
-                  <div className="space-y-4">
-                    {content.vocabulary.map((word) => (
-                      <div key={word.id} className="flex items-start gap-4 p-4 rounded-lg border bg-muted/20">
-                        <Button variant="ghost" size="icon" className="shrink-0 mt-1">
-                          <Volume2 className="h-4 w-4" />
-                        </Button>
-                        <div className="flex-1">
-                          <div className="flex items-baseline gap-3 mb-1">
-                            <h4 className="font-bold text-lg text-foreground">{word.word}</h4>
-                            <span className="text-muted-foreground text-sm">{word.pronunciation}</span>
-                            <Badge variant="secondary" className="text-xs">{word.partOfSpeech}</Badge>
-                          </div>
-                          <p className="text-foreground mb-2">{word.definition}</p>
-                          <p className="text-sm text-muted-foreground italic">"{word.example}"</p>
+                <VocabularyList vocabulary={episodeData.vocabulary} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Expressions Tab */}
+          <TabsContent value="expressions">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5" />
+                  Expressions & Idioms
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {episodeData.expressions.map((expr, index) => (
+                    <Card key={index} className="bg-muted/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-semibold text-lg text-foreground">"{expr.expression}"</h4>
+                          <Badge variant="outline" className="text-xs capitalize">{expr.usage}</Badge>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">Vocabulary not available for this episode yet.</p>
-                )}
+                        <p className="text-muted-foreground mb-3">{expr.meaning}</p>
+                        <div className="bg-background rounded-lg p-3 border">
+                          <p className="text-sm italic">"{expr.example}"</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -304,7 +291,7 @@ const EpisodeDetail = () => {
                   {quizSubmitted && (
                     <div className="flex items-center gap-4">
                       <span className="text-lg font-semibold">
-                        Score: {quizScore}/{content?.quiz.length || 0}
+                        Score: {quizScore}/{episodeData.quiz.length}
                       </span>
                       <Button variant="outline" size="sm" onClick={resetQuiz}>
                         Try Again
@@ -314,34 +301,30 @@ const EpisodeDetail = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {content?.quiz ? (
-                  <div className="space-y-6">
-                    {content.quiz.map((question, qIndex) => (
-                      <QuizQuestionCard
-                        key={question.id}
-                        question={question}
-                        questionNumber={qIndex + 1}
-                        selectedAnswer={quizAnswers[question.id]}
-                        onSelect={(answerIndex) => handleQuizAnswer(question.id, answerIndex)}
-                        showResult={quizSubmitted}
-                      />
-                    ))}
-                    
-                    {!quizSubmitted && (
-                      <div className="flex justify-center pt-4">
-                        <Button 
-                          size="lg" 
-                          onClick={handleQuizSubmit}
-                          disabled={Object.keys(quizAnswers).length < content.quiz.length}
-                        >
-                          Submit Quiz ({Object.keys(quizAnswers).length}/{content.quiz.length} answered)
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">Quiz not available for this episode yet.</p>
-                )}
+                <div className="space-y-6">
+                  {episodeData.quiz.map((question, qIndex) => (
+                    <QuizQuestionCard
+                      key={qIndex}
+                      question={question}
+                      questionNumber={qIndex + 1}
+                      selectedAnswer={quizAnswers[qIndex.toString()]}
+                      onSelect={(answerIndex) => handleQuizAnswer(qIndex.toString(), answerIndex)}
+                      showResult={quizSubmitted}
+                    />
+                  ))}
+                  
+                  {!quizSubmitted && (
+                    <div className="flex justify-center pt-4">
+                      <Button 
+                        size="lg" 
+                        onClick={handleQuizSubmit}
+                        disabled={Object.keys(quizAnswers).length < episodeData.quiz.length}
+                      >
+                        Submit Quiz ({Object.keys(quizAnswers).length}/{episodeData.quiz.length} answered)
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -365,16 +348,14 @@ const EpisodeDetail = () => {
                     Practice conversation with our AI tutor. Answer questions about the podcast 
                     and get instant feedback on your responses.
                   </p>
-                  {content?.aiPrompts && (
-                    <div className="mt-6 space-y-3">
-                      <p className="text-sm text-muted-foreground">Preview of conversation topics:</p>
-                      {content.aiPrompts.map((prompt) => (
-                        <div key={prompt.id} className="p-3 bg-muted/50 rounded-lg text-sm text-left max-w-md mx-auto">
-                          "{prompt.question}"
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div className="mt-6 space-y-3">
+                    <p className="text-sm text-muted-foreground">Preview of conversation topics:</p>
+                    {episodeData.aiConversation.map((prompt, index) => (
+                      <div key={index} className="p-3 bg-muted/50 rounded-lg text-sm text-left max-w-md mx-auto">
+                        "{prompt.prompt}"
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -387,7 +368,12 @@ const EpisodeDetail = () => {
 
 // Quiz Question Component
 interface QuizQuestionCardProps {
-  question: QuizQuestion;
+  question: {
+    question: string;
+    options: string[];
+    correctAnswer: number;
+    explanation: string;
+  };
   questionNumber: number;
   selectedAnswer?: number;
   onSelect: (answerIndex: number) => void;

@@ -1,5 +1,15 @@
 // Episode content types for podcast interaction page
 
+// Rich content block types for transcript
+export type ContentBlock =
+  | { type: 'heading'; text: string; level: 1 | 2 | 3 }
+  | { type: 'text'; text: string; highlight?: boolean }
+  | { type: 'image'; src: string; alt: string; caption?: string }
+  | { type: 'audio-cue'; text: string; timestamp: number }
+  | { type: 'practice'; instruction: string; expected: string }
+  | { type: 'dialogue'; speaker: string; text: string }
+  | { type: 'section'; title: string; blocks: ContentBlock[] };
+
 export interface TranscriptSegment {
   id: string;
   startTime: number; // seconds

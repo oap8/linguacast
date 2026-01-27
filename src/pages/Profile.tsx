@@ -9,6 +9,8 @@ import { getLevelColor } from '@/lib/mockData';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/features/auth/hooks';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { getNextLevelInfo } from '@/features/xp/logic';
 
 const DEFAULT_PROGRESS = {
   episodesCompleted: 0,
@@ -236,6 +238,14 @@ const Profile = () => {
           </div>
         </section>
 
+        {/* Language Preference */}
+        <section className="mb-10">
+          <h2 className="font-display text-xl font-bold text-foreground mb-4">
+            Language Preference
+          </h2>
+          <LanguageSelector />
+        </section>
+
         {/* Account Settings */}
         <section>
           <h2 className="font-display text-xl font-bold text-foreground mb-4">
@@ -244,10 +254,6 @@ const Profile = () => {
           <div className="bg-card border border-border rounded-2xl divide-y divide-border">
             <button className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors first:rounded-t-2xl">
               <span className="text-foreground">Notification Preferences</span>
-              <Settings className="h-4 w-4 text-muted-foreground" />
-            </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors">
-              <span className="text-foreground">Language Settings</span>
               <Settings className="h-4 w-4 text-muted-foreground" />
             </button>
             <button className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors last:rounded-b-2xl">
